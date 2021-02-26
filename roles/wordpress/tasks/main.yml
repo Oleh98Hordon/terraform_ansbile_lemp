@@ -47,6 +47,17 @@
 - name: Make domain user owner of directory with site
   file: dest=/var/www/wordpress/{{domain}} owner={{domain}} group={{domain}} mode=u=rwX,g=rX,o=rX recurse=yes
 
+- name: Re-create nginx config file
+  template: "src=../templates/default-site-wordpress-http.conf dest=/etc/nginx/sites-available/{{domain}} owner=www-data group=www-data mode=0644"
+  become: yes
+
+- name: Enable site
+  file: src=/etc/nginx/sites-available/{{domain}} dest=/etc/nginx/sites-enabled/{{domain}} owner=www-data group=www-data state=link
+  notify:
+    - restart nginx
+    - restart php-fpm
+  become: yes
+
 - name: Download and Install WP-CLI
   get_url:
     url="https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"

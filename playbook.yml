@@ -4,7 +4,7 @@
   vars:
     - ansible_connection: ssh
     - ansible_user: ubuntu
-    - domain: project-by-oleg.space 
+    - domain: localhost
     - ansible_port: 22
     - mysql_port: 3306
     - mysql_root_password: root
@@ -20,7 +20,7 @@
     - certbot_mail: norrinradd212@gmail.com
   roles:
     - static
-#    - fail2ban
+    - fail2ban
     - php
     - mysql
     - wordpress

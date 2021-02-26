@@ -1,5 +1,4 @@
 ---
-#
 
 - name: Create /etc/wireguard directory
   file:
@@ -13,15 +12,21 @@
   command: uname -r
   register: kernel_release
 
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+
 - name: Install the WireGuard packages
   become: yes
   apt:
-    package:
-      - wireguard-dkms
-      - wireguard-tools
-      - linux-headers-{{ kernel_release.stdout }}
-      - linux-headers-generic
-      - wireguard
+    state: present
+    pkg:
+    - wireguard
+    - wireguard-dkms
+    - wireguard-tools
+    - "linux-headers-{{ ansible_kernel }}"
 
 - name: Generate private key
   shell: "wg genkey"
@@ -80,6 +85,12 @@
   file:
     path: "{{ wireguard_path }}/.reload-module-on-update"
     state: touch
+
+- name: wg-quick@wg0
+  systemd:
+    name: wg-quick@wg0
+    state: started
+    enabled: True
 
 - name: Reload WireGuard
   shell: "wg-quick down wg0 && wg-quick up wg0"
