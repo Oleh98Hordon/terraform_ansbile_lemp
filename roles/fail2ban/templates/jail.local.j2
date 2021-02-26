@@ -1,0 +1,56 @@
+[DEFAULT]
+
+ignoreip = 127.0.0.1/8 92.253.250.94
+bantime  = 600
+maxretry = 3
+
+[nginx-noscript]
+
+enabled = true
+port = http,https
+filter = nginx-noscript
+logpath = /var/log/nginx/error.log
+maxretry = 1
+findtime = 86400
+bantime = 2592000
+
+[nginx-badrequests]
+
+enabled = true
+filter = nginx-badrequests
+port = http,https
+logpath = /var/log/nginx/access.log
+maxretry = 1
+findtime = 86400
+bantime = 2592000
+
+[nginx-404]
+
+enabled = true
+port = http,https
+filter = nginx-404
+logpath = /var/log/nginx/access.log
+bantime = 600
+findtime = 600
+maxretry = 10
+
+[nginx-dos]
+# Based on apache-badbots but a simple IP check (any IP requesting more than
+# 240 pages in 60 seconds, or 4p/s average, is suspicious)
+# Block for two full days.
+# @author Yannick Warnier
+enabled = true
+port = http
+filter = nginx-dos
+logpath = /var/log/nginx/access.log
+findtime = 60
+bantime = 172800
+maxretry = 240
+
+[wordpress]
+enabled = true
+port = http,https
+filter = wordpress
+logpath = /var/log/nginx/access.log
+maxretry = 10
+bantime = 3600

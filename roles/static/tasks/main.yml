@@ -1,0 +1,36 @@
+---
+# tasks file for nginx
+
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=3600
+  become: yes
+
+- name: Install nginx and curl
+  become: yes
+  apt: 
+    state: present
+    pkg:
+      - nginx
+      - curl
+
+- name: Open port 80 in iptables
+  command: iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+
+- name: Start nginx
+  become: yes
+  service:
+    name: nginx
+    state: started
+
+- name: Clean default conf 1
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - /etc/nginx/sites-available/default
+    - /etc/nginx/sites-enabled/default
+  become: yes
+
+- name: Purge Apache2 if installed
+  apt: name=apache2 state=absent
+  become: yes

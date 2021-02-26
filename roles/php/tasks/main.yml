@@ -1,0 +1,29 @@
+---
+# tasks file for php
+
+- name: Install php and basic extensions
+  become: yes
+  apt:
+    state: present
+    pkg:
+      - php{{php_version}}
+      - php{{php_version}}-mysql
+      - php{{php_version}}-gd
+      - php-ssh2
+      - php-fpm
+
+- name: Create group for the specific domain
+  group:
+    name: "{{domain}}"
+    state: present
+
+- name: Create user for the domain and register it to the correspondent group
+  user:
+    name: "{{domain}}"
+    group: "{{domain}}"
+  become_method: "sudo"
+  become: yes
+
+- name: Set up fpm pool
+  template: "src=../templates/pool-fpm.conf dest=/etc/php/{{php_version}}/fpm/pool.d/{{domain}}.conf"
+  become: yes

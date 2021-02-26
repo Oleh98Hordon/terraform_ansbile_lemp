@@ -1,0 +1,52 @@
+---
+- name: Install mysql and related tools
+  become: yes
+  apt:
+    state: present
+    pkg:
+      - mysql-server
+      - python3-mysqldb
+      - php-mysql
+
+- name: Start the MySQL service
+  action: service name=mysql state=started
+
+- name: Set root user password
+  become: yes
+  mysql_user:
+    name: root
+    password: "{{ lookup('password', 'credentials/' + domain + '/mysql_root_password.txt') }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Copy .my.cnf file with root password credentials
+  become: yes
+  template: src=roles/site-php-mysql/templates/.my.cnf dest=/root/.my.cnf owner=root mode=0600
+
+- name: Create mysql database
+  become: yes
+  mysql_db:
+    name: wordpress
+    state: present
+
+- name: Create mysql user
+  become: yes
+  mysql_user:
+    name: worduser
+    password: "{{ lookup('password', 'credentials/' + domain + '/mysql_root_password.txt') }}"
+    priv: "*.*:ALL"
+
+# - name: Delete anonymous MySQL server user for $server_hostname
+#   become: true
+#   action: mysql_user user="" host="{{ server_hostname }}" state="absent"
+
+- name: Delete anonymous MySQL server user for localhost
+  become: yes
+  action: mysql_user user="" state="absent"
+
+- name: Remove the MySQL test database
+  become: yes
+  action: mysql_db db=test state=absent
+
+- name: Update mysql root password for all root accounts
+  become: yes
+  mysql_user: name=root  password="{{ lookup('password', 'credentials/' + domain + '/mysql_root_password.txt') }}" priv=*.*:ALL,GRANT

@@ -1,0 +1,34 @@
+---
+- hosts: linux1
+  become: yes
+  vars:
+    - ansible_connection: ssh
+    - ansible_user: ubuntu
+    - domain: project-by-oleg.space 
+    - ansible_port: 22
+    - mysql_port: 3306
+    - mysql_root_password: root
+    - php_version: 7.4
+    # Wordpress config
+    - auto_up_disable: true
+    - core_update_level: true
+    # For WP-CLI
+    - root_bin: /usr/local/bin
+    - wpuser: supervisor
+    - wpmail: norrinradd212@gmail.com
+    # For Certbot/LetsEncrypt
+    - certbot_mail: norrinradd212@gmail.com
+  roles:
+    - static
+#    - fail2ban
+    - php
+    - mysql
+    - wordpress
+    - ufw
+#    - certbot
+
+- hosts: server-1
+  become: yes
+
+  roles:
+    - wireguard

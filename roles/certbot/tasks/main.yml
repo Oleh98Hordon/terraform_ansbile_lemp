@@ -1,0 +1,28 @@
+---
+- name: Open port 443 in iptables
+  command: iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+- name: Install certbot
+  apt:
+    pkg:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+  become: yes
+
+# Testing - add webroot to command
+- name: Install certificate
+  shell: certbot --nginx -n --agree-tos --redirect --email {{certbot_mail}} -d {{domain}} -d www.{{domain}} --webroot-path /var/www/{{ site.stdout }}/{{ domain }}/
+
+- name: Re-create nginx config file (PHP or Wordpress)
+  template: "src=../templates/php-wordpress-nginx-certbot.conf dest=/etc/nginx/sites-available/{{domain}} owner=www-data group=www-data mode=0644"
+  notify:
+    - restart nginx
+  # become: yes
+  when: site.stdout == "wordpress"
+
+- name: Enable site
+  file: src=/etc/nginx/sites-available/{{domain}} dest=/etc/nginx/sites-enabled/{{domain}} owner=www-data group=www-data state=link
+  notify:
+    - restart nginx
+  become: yes
