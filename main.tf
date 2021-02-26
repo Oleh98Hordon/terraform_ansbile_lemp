@@ -8,12 +8,13 @@ resource "aws_instance" "test_server_master" {
         ami = var.ami
         instance_type = var.instance_type
         subnet_id = aws_subnet.my_VPC_Subnet.id
-        vpc_security_group_ids = [aws_security_group.sg.id]
+        vpc_security_group_ids = [aws_security_group.sg_lemp.id]
 	      key_name = var.key_name
         associate_public_ip_address = true
         tags = {
-        Name = "${var.projectName}_test"
+        Name = "lemp_${var.projectName}"
         }
+        depends_on = [aws_instance.test_server_wireguard]
         provisioner "local-exec" {
           command = <<EOD
           cat <<EOF > hosts.txt
@@ -29,13 +30,13 @@ resource "aws_instance" "test_server_wireguard" {
         ami = var.ami
         instance_type = var.instance_type
         subnet_id = aws_subnet.my_VPC_Subnet.id
-        vpc_security_group_ids = [aws_security_group.sg.id]
+        vpc_security_group_ids = [aws_security_group.sg_wireguard.id]
 	      key_name = var.key_name
         associate_public_ip_address = true
         tags = {
-        Name = "${var.projectName}_test"
+        Name = "wireguard_${var.projectName}"
         }
-        depends_on = [aws_instance.test_server_master]
+#        depends_on = [aws_instance.test_server_master]
         provisioner "local-exec" {
           command = <<EOD
           cat <<EOF >> hosts.txt
@@ -51,7 +52,6 @@ client
 ansible_python_interpreter=/usr/bin/python3
 EOF
 EOD
-
 
 }
 }
@@ -71,25 +71,48 @@ resource "aws_subnet" "my_VPC_Subnet" {
   }
 }
 #-----------------------------------------------------------
-resource "aws_security_group" "sg" {
-          name        = "${var.projectName}_SG"
+resource "aws_security_group" "sg_lemp" {
+          name        = "${var.projectName}_SG_lemp"
           vpc_id = aws_vpc.my_VPC.id
+          depends_on = [aws_instance.test_server_wireguard]
 
-#  dynamic "ingress"{
-#      for_each = ["22", "80", "443", "51820"]
-#      content {
-#              from_port = ingress.value
-#              to_port = ingress.value
-#              protocol = "tcp"
-#              cidr_blocks = [var.CIDRblock]
-#            }
- #         }
+  dynamic "ingress"{
+      for_each = ["80", "443"]
+      content {
+              from_port = ingress.value
+              to_port = ingress.value
+              protocol = "tcp"
+              cidr_blocks = [var.CIDRblock]
+           }
+          }
   ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [aws_instance.test_server_wireguard.id]
+  }
+
+  egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = [var.CIDRblock]
   }
+}
+#-----------------------------------------------------------
+resource "aws_security_group" "sg_wireguard" {
+          name        = "${var.projectName}_SG_wireguard"
+          vpc_id = aws_vpc.my_VPC.id
+
+  dynamic "ingress"{
+      for_each = ["22", "80", "443", "51820"]
+      content {
+              from_port = ingress.value
+              to_port = ingress.value
+              protocol = "tcp"
+              cidr_blocks = [var.CIDRblock]
+           }
+          }
 
   egress {
     from_port   = 0
