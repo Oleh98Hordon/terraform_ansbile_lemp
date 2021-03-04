@@ -1,8 +1,20 @@
+#---------------Setting for remote_state---------------------
+/*terraform {
+     backend = "s3"
+         bucket = "bucket-name"
+         key = var.key
+         region = var.region
+         dynamodb_table = "dynamodb-terraform-state-lock"
+         encrypt = true
+}
+*/
+#-----------------------------------------------------------
 provider "aws" {
    access_key = var.access_key
    secret_key = var.secret_key
    region = var.region
 }
+
 #-----------------------------------------------------------
 resource "aws_instance" "test_server_master" {
         ami = var.ami
@@ -25,7 +37,37 @@ EOD
 
 }
 }
+#----------If you want static public_ip---------------------
+# resource "aws_eip" "eip" {
+#   instance = aws_instance.test_server_master.id
+#   vpc      = true
+# }
+
+# output "public_ip" {
+#   value = aws_instance.test_server_master.public_ip
+# }
+#---------------Setting for static site(e.g Wordpress)-------
+# resource "aws_route53_zone" "dns_name_aws" {
+#   name = "project-by-oleg.space"
+
+#   tags = {
+#     Environment = "prod"
+#   }
+# }
+
+# resource "aws_route53_record" "www" {
+#   zone_id = aws_route53_zone.dns_name_aws.zone_id
+#   name    = "www.project-by-oleg.space"
+#   type    = "A"
+#   ttl     = "300"
+#   records = [aws_eip.eip.public_ip]
+# }
+
+# output "name_server"{
+#   value=aws_route53_zone.easy_aws.name_servers
+# }
 #-----------------------------------------------------------
+
 resource "aws_instance" "test_server_wireguard" {
         ami = var.ami
         instance_type = var.instance_type
@@ -36,7 +78,6 @@ resource "aws_instance" "test_server_wireguard" {
         tags = {
         Name = "wireguard_${var.projectName}"
         }
-#        depends_on = [aws_instance.test_server_master]
         provisioner "local-exec" {
           command = <<EOD
           cat <<EOF >> hosts.txt

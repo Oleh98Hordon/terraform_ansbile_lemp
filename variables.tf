@@ -25,3 +25,5 @@ variable projectName {}
 variable done {
    default = "Terraform done"
 }
+
+variable key {}
