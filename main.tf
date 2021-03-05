@@ -191,3 +191,93 @@ resource "aws_route_table_association" "My_VPC_association" {
 output "done" {
   value = var.done
 }
+
+#------------------Create_RDS_MYSQL_For_Wordpress-----------
+# Create a database server
+# resource "aws_db_instance" "mysql_wordpress" {
+#   engine         = "mysql"
+#   engine_version = "5.7"
+#   instance_class = "db.t1.micro"
+#   name           = "wordpress_db"
+#   username       = "root"
+#   password       = "rootpasswd"
+#   port           = "3306"
+#   vpc_security_group_ids   = ["${aws_security_group.mydb1.id}"]
+
+# }
+# # Configure the MySQL provider based on the outcome of creating the aws_db_instance.
+# provider "mysql" {
+#   endpoint = "${aws_db_instance.mysql_wordpress.endpoint}"
+#   username = "${aws_db_instance.mysql_wordpress.username}"
+#   password = "${aws_db_instance.mysql_wordpress.password}"
+# }
+
+# resource "mysql_database" "app" {
+#   name = "wordpress"
+# }
+
+# resource "mysql_user" "wp_user" {
+#   user               = "worduser"
+#   host               = "localhost"
+#   plaintext_password = "wordpass"
+# }
+
+# resource "mysql_grant" "wp_user_priv" {
+#   user       = "${mysql_user.wp_user.user}"
+#   host       = "${mysql_user.wp_user.host}"
+#   database   = "wordpress"
+#   privileges = ["ALL"]
+# }
+# output "db_endpoint" {
+#   value = aws_db_instance.mysql_wordpress.endpoint
+# }
+#-----------------------------------------------------------
+# resource "aws_security_group" "wordpress_db_sg" {
+#   name = "wordpress_db_sg"
+
+#   vpc_id = aws_vpc.my_db_VPC.id
+
+#   ingress {
+#     from_port = 3306
+#     to_port = 3306
+#     protocol = "tcp"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
+
+#   egress {
+#     from_port = 0
+#     to_port = 0
+#     protocol = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
+# }
+# #-----------------------------------------------------------
+# resource "aws_vpc" "my_db_VPC" {
+#   cidr_block           = var.dbCIDRblock
+# }
+# #-----------------------------------------------------------
+# resource "aws_subnet" "my_db_VPC_Subnet" {
+#   vpc_id                  = aws_vpc.my_VPC.id
+#   cidr_block              = var.db_subnetCIDRblock
+# }
+# #-----------------------------------------------------------
+# #-----------------------------------------------------------
+# resource "aws_internet_gateway" "my_db_VPC_GW" {
+#  vpc_id = aws_vpc.my_db_VPC.id
+# }
+# #-----------------------------------------------------------
+# resource "aws_route_table" "my_db_VPC_route_table" {
+#  vpc_id = aws_vpc.my_db_VPC.id
+# }
+# #-----------------------------------------------------------
+# resource "aws_route" "My_db_VPC_internet_access" {
+#   route_table_id         = aws_route_table.my_db_VPC_route_table.id
+#   destination_cidr_block = var.destinationCIDRblock
+#   gateway_id             = aws_internet_gateway.my_db_VPC_GW.id
+# }
+# #-----------------------------------------------------------
+# resource "aws_route_table_association" "My_db_VPC_association" {
+#   subnet_id      = aws_subnet.my_VPC_Subnet.id
+#   route_table_id = aws_route_table.my_db_VPC_route_table.id
+# }
+# #-----------------------------------------------------------
