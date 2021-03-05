@@ -1,7 +1,7 @@
 #!/bin/bash
 terraform apply -auto-approve &&\
 echo "terraform already done, now you need wait 20sec"
-for i in {0..20}
+for i in {0..20..5}
 do
    echo "$i sec"
    sleep 1
